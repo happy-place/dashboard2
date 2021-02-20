@@ -1,0 +1,39 @@
+Clickhouse:
+  Truncate: "ALTER TABLE shard.dws_collaboration_30d_statistic_by_member_daily ON CLUSTER '{CLUSTER_NAME}' DELETE WHERE ldate = '{DATE}'"
+  Upsert: "INSERT INTO all.dws_collaboration_30d_statistic_by_member_daily (ldate,team_id,user_id,add_collaborations,use_ats,public_shares,comments,file_views,create_files)
+           SELECT
+               '{DATE}' as theDate,
+               team_id,
+               user_id,
+               count(if(action_name='add_collaborator', 1,null)) as add_collaborations,
+               count(if(action_name='at', 1,null)) as use_ats,
+               count(if(action_name='public_share' and status = '1', 1,null)) as public_shares,
+               count(if(action_name='comment', 1,null)) as comments,
+               count(if(action_name='view_file', 1,null)) as file_views,
+               count(if(action_name = 'create_obj' AND file_type != 1, 1,null)) as create_files
+           FROM
+               (
+                   SELECT
+                       ldate,team_id,action_name,cast(user_id as Int64) as user_id,visitParamExtractRaw(extend_info,'status') as status,file_type
+                   FROM shimo.events_all_view
+                   WHERE ldate >= addDays(toDate('{DATE}'), -29) AND ldate <= '{DATE}'
+                     AND file_type != 0
+                     AND (
+                           (action_name='add_collaborator')
+                           OR (action_name='at')
+                           OR (action_name='public_share' AND visitParamExtractRaw(extend_info,'status') = '1')
+                           OR (action_name='comment')
+                           OR (action_name='view_file')
+                           OR (action_name = 'create_obj' AND file_type != 1)
+                       )
+                     AND team_id is not null
+               ) t1
+              INNER JOIN
+              (
+                  select cast(id as Nullable(Int64)) as user_id from shimo_pro.users where is_seat=1 AND team_id is not null
+              ) t2 on t1.user_id=t2.user_id
+           GROUP BY team_id,user_id"
+  Query: "SELECT * FROM all.dws_collaboration_30d_statistic_by_member_daily WHERE ldate = '{DATE}'"
+Mysql:
+  Truncate: "DELETE FROM dws_collaboration_30d_statistic_by_member_daily WHERE ldate = '{DATE}'"
+  Upsert: "INSERT INTO dws_collaboration_30d_statistic_by_member_daily VALUES(?,?,?,?,?,?,?,?,?)"

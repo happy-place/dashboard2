@@ -1,0 +1,29 @@
+Clickhouse:
+  Truncate: "ALTER TABLE shard.dws_file_7d_statistic_by_member_daily ON CLUSTER '{CLUSTER_NAME}' DELETE WHERE ldate = '{DATE}'"
+  Upsert: "INSERT INTO all.dws_file_7d_statistic_by_member_daily (ldate,team_id,user_id,create_files,import_files,upload_files)
+           SELECT
+               '{DATE}' as theDate,
+               team_id,
+               user_id,
+               count(if(action_name = 'create_obj' AND file_type != 1, guid,null)) as create_files,
+               count(if(action_name = 'import_obj' , guid,null)) as import_files,
+               count(if(action_name = 'upload_obj' AND file_type = 3, guid,null)) as upload_files
+           FROM
+               (
+                   SELECT
+                       ldate,action_name,file_type,guid,team_id, user_id
+                   FROM shimo.events_all_view
+                   WHERE ldate = '{DATE}'
+                     AND file_type != 0
+                     AND (
+                           (action_name = 'create_obj' AND file_type != 1)
+                           OR (action_name = 'import_obj')
+                           OR (action_name = 'upload_obj' AND file_type = 3)
+                       )
+                     AND team_id is not null
+               ) T1
+           GROUP BY team_id,user_id"
+  Query: "SELECT * FROM all.dws_file_7d_statistic_by_member_daily WHERE ldate = '{DATE}'"
+Mysql:
+  Truncate: "DELETE FROM dws_file_7d_statistic_by_member_daily WHERE ldate = '{DATE}'"
+  Upsert: "INSERT INTO dws_file_7d_statistic_by_member_daily VALUES(?,?,?,?,?,?)"

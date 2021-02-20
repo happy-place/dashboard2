@@ -1,0 +1,76 @@
+Clickhouse:
+  Truncate: "ALTER TABLE shard.dws_creation_1d_download_by_global_daily ON CLUSTER '{CLUSTER_NAME}' DELETE WHERE ldate = '{DATE}'"
+  Upsert: "INSERT INTO all.dws_creation_1d_download_by_global_daily (
+               ldate,
+               team_id,
+               create_objs,
+               create_docxs,
+               create_sheets,
+               create_tables,
+               create_ppts,
+               create_docs,
+               create_clouds,
+               create_dirs,
+               create_spaces,
+               create_others,
+               total_create_objs,
+               total_add_collaborations,
+               member_count,
+               activated_seats,
+               deep_active_uv
+           )
+           SELECT
+               '{DATE}' as theDate,
+               t1.team_id,
+               create_objs,
+               create_docxs,
+               create_sheets,
+               create_tables,
+               create_ppts,
+               create_docs,
+               create_clouds,
+               create_dirs,
+               create_spaces,
+               create_others,
+               total_create_objs,
+               total_add_collaborations,
+               member_count,
+               activated_seats,
+               deep_active_uv
+           FROM
+           (
+               SELECT
+                   cast(team_id as Nullable(String)) as team_id,
+                   count(if(file_type in (2, 3), guid, null)) as create_objs,
+                   count(if((file_type = 2 and sub_type in (0, -2)), guid, null)) as create_docxs,
+                   count(if((file_type = 2 and sub_type in (-1, -3, -4)), guid, null)) as create_sheets,
+                   count(if((file_type = 2 and sub_type in (-8)), guid, null)) as create_tables,
+                   count(if((file_type = 2 and sub_type in (-5, -10)), guid, null)) as create_ppts,
+                   count(if((file_type = 2 and sub_type in (-6)), guid, null)) as create_docs,
+                   count(if((file_type = 3), guid, null)) as create_clouds,
+                   count(if(action_name = 'create_obj' AND file_type = 1 AND sub_type = 1, guid,null)) as create_dirs,
+                   count(if(action_name = 'create_obj' AND file_type = 1 AND sub_type = 2, guid,null)) as create_spaces,
+                   count(if((file_type = 2 and sub_type in (-7, -9)), guid, null)) as create_others
+               FROM shimo.events_all_view
+               WHERE ldate >= addDays(toDate('{DATE}'), -6) AND ldate <= '{DATE}'
+                 AND file_type != 0
+                 AND action_name in ('create_obj', 'upload_obj')
+                 AND team_id is not null
+               GROUP BY team_id
+           ) t1
+               left join
+           (
+               select team_id,member_count,activated_seats,deep_active_uv
+               from all.dws_enterprise_7d_user_statistic_by_global_daily
+               where ldate='{DATE}'
+           ) t2 on t1.team_id = t2.team_id
+               left join
+           (
+               select team_id,create_objs as total_create_objs,add_collaborations as total_add_collaborations
+               from all.dws_enterprise_td_usage_statistic_by_global_daily
+               where ldate='{DATE}'
+           ) t3 on t1.team_id = t3.team_id"
+  Query: "SELECT * FROM all.dws_creation_1d_download_by_global_daily WHERE ldate = '{DATE}'"
+Mysql:
+  Truncate: "DELETE FROM dws_creation_1d_download_by_global_daily WHERE ldate = '{DATE}'"
+  Upsert: "INSERT INTO dws_creation_1d_download_by_global_daily VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"

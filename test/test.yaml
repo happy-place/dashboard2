@@ -1,0 +1,11 @@
+Site:
+  HttpPort: 8080
+  HttpsOn: false
+  Domain: "pythonsite.com"
+  HttpsPort: 443
+Nginx:
+  Port: 80
+  LogPath:  "/opt/log/nginx.log"
+  Path: "/opt/nginx/"
+SiteName: "this is my web site"
+SiteAddr: "BeiJing"

@@ -1,0 +1,38 @@
+{
+  "clickhouse": {
+    "host": "clickhouse-pro.clickhouse",
+    "port":         "9000",
+    "user":         "chadmin",
+    "pass":         "6hAFCyH0Bw0JN",
+    "db":           "default",
+    "cluster_name": "shard2-repl2"
+  },
+  "boss_mysql": {
+    "host": "rm-2ze06v5ed2gb1ol2l.mysql.rds.aliyuncs.com",
+    "port": "3306",
+    "user": "boss_stats",
+    "pass": "P73e485173fa6a7",
+    "db":   "svc_boss_stats"
+  },
+  "org_mysql": {
+    "host": "rm-2zezmon0g7635nkv4.mysql.rds.aliyuncs.com",
+    "port": "3306",
+    "user": "org_db",
+    "pass": "dashHSDa34004e30",
+    "db": "organization"
+  },
+  "tree_mysql": {
+    "host": "rm-2zef2h27mdnms0009.mysql.rds.aliyuncs.com",
+    "port": "3306",
+    "user": "rotree",
+    "pass": "IDS6955b171bdf7",
+    "db":   "svc_tree"
+  },
+  "file_mysql": {
+    "host": "rm-2ze78jx65s1jo7d01.mysql.rds.aliyuncs.com",
+    "port": "3306",
+    "user": "odps_file",
+    "pass": "P0a7b736693707",
+    "db":   "svc_file"
+  }
+}

@@ -1,0 +1,18 @@
+Clickhouse:
+  Truncate: "ALTER TABLE shard.dws_file_7d_statistic_by_global_daily ON CLUSTER '{CLUSTER_NAME}' DELETE WHERE ldate = '{DATE}'"
+  Upsert: "INSERT INTO all.dws_file_7d_statistic_by_global_daily (ldate,team_id,create_files,import_files,upload_files)
+           SELECT
+               '{DATE}' as theDate,
+               team_id,
+               count(if(action_name = 'create_obj' AND file_type != 1, guid,null)) as create_files,
+               count(if(action_name = 'import_obj' , guid,null)) as import_files,
+               count(if(action_name = 'upload_obj' AND file_type = 3, guid,null)) as upload_files
+           FROM shimo.events_all_view
+           WHERE ldate = '{DATE}'
+             AND file_type != 0
+             AND team_id is not null
+           GROUP BY team_id"
+  Query: "SELECT * FROM all.dws_file_7d_statistic_by_global_daily WHERE ldate = '{DATE}'"
+Mysql:
+  Truncate: "DELETE FROM dws_file_7d_statistic_by_global_daily WHERE ldate = '{DATE}'"
+  Upsert: "INSERT INTO dws_file_7d_statistic_by_global_daily VALUES(?,?,?,?,?)"

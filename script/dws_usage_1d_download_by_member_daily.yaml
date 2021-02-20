@@ -1,0 +1,67 @@
+Clickhouse:
+  Truncate: "ALTER TABLE shard.dws_usage_1d_download_by_member_daily ON CLUSTER '{CLUSTER_NAME}' DELETE WHERE ldate = '{DATE}'"
+  Upsert: "INSERT INTO all.dws_usage_1d_download_by_member_daily (ldate,team_id,department_id,user_id,user_name,file_views,create_files,create_spaces,create_dirs,use_ats,add_collaborations,public_shares,comments,active_score,import_files,upload_files)
+           select
+               '{DATE}' as theDate,
+               temp1.team_id,
+               department_id,
+               temp1.user_id,
+               user_name,
+               file_views,
+               create_files,
+               create_spaces,
+               create_dirs,
+               use_ats,
+               add_collaborations,
+               public_shares,
+               comments,
+               (file_views * 1 + create_files * 10 + (add_collaborations + public_shares + comments + use_ats) * 5)  as active_score,
+               import_files,
+               upload_files
+           from
+           (
+               SELECT
+                   team_id,
+                   user_id,
+                   user_name,
+                   count(if(action_name = 'create_obj' AND file_type != 1, guid,null)) as create_files,
+                   count(if(action_name = 'create_obj' AND file_type = 1 AND sub_type=1, guid,null)) as create_dirs,
+                   count(if(action_name = 'create_obj' AND file_type = 1 AND sub_type=2, guid,null)) as create_spaces,
+                   count(if(action_name='add_collaborator', 1,null)) as add_collaborations,
+                   count(if(action_name='at', 1,null)) as use_ats,
+                   count(if(action_name='public_share' and status = '1', 1,null)) as public_shares,
+                   count(if(action_name='comment', 1,null)) as comments,
+                   count(if(action_name='view_file', 1,null)) as file_views,
+                   count(if(action_name = 'import_obj' , guid,null)) as import_files,
+                   count(if(action_name = 'upload_obj' AND file_type = 3, guid,null)) as upload_files
+               FROM
+                   (
+                       SELECT
+                           ldate,action_name,file_type,sub_type,guid,team_id,user_id,user_name,visitParamExtractRaw(extend_info,'status') as status
+                       FROM shimo.events_all_view
+                       WHERE ldate = '{DATE}'
+                         AND file_type != 0
+                         AND (
+                               (action_name = 'create_obj')
+                               OR (action_name = 'import_obj')
+                               OR (action_name = 'upload_obj' AND file_type = 3)
+                               OR (action_name='add_collaborator')
+                               OR (action_name='at')
+                               OR (action_name='public_share' AND visitParamExtractRaw(extend_info,'status') = '1')
+                               OR (action_name='comment')
+                               OR (action_name='view_file')
+                               OR (action_name = 'create_obj' AND file_type != 1)
+                           )
+                         AND team_id is not null
+                   ) T1
+               GROUP BY team_id,user_id,user_name
+           ) temp1
+           left join
+           (
+               select user_id,department_id from all.user_dep
+           ) temp2
+           on temp1.user_id = temp2.user_id"
+  Query: "SELECT * FROM all.dws_usage_1d_download_by_member_daily WHERE ldate = '{DATE}'"
+Mysql:
+  Truncate: "DELETE FROM dws_usage_1d_download_by_member_daily WHERE ldate = '{DATE}'"
+  Upsert: "INSERT INTO dws_usage_1d_download_by_member_daily VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"

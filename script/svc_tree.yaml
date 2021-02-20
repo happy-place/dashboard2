@@ -1,0 +1,11 @@
+TreeClickhouse:
+  Truncate: "ALTER TABLE shard.user_dep ON CLUSTER '{CLUSTER_NAME}' DELETE WHERE user_id is not null"
+  Upsert: "INSERT INTO all.user_dep VALUES (?,?)"
+TreeMysql:
+  Query: "SELECT CONCAT(node_id,'-',node_type) as id_type,node_id,CONCAT(parent_id,'-',parent_type) as parent_id_type,parent_id
+         FROM edge WHERE node_type IN (9,10,11) AND is_removed=0"
+#  Query: "SELECT CONCAT(node_id,'-',node_type) as id_type,node_id,CONCAT(parent_id,'-',parent_type) as parent_id_type,parent_id from (
+#    select * from svc_tree.edge where (node_type,node_id) in (
+#      (11,6003920),(9, 183141), (10, 2644), (10, 2649), (10, 2646), (10, 2650),(10, 2691), (10, 2652), (10, 2692)
+#      ) and is_removed=0
+#  ) temp"

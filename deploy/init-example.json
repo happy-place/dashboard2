@@ -1,0 +1,52 @@
+{
+  "clickhouse": {
+    "host": "clickhouse-pro.clickhouse",
+    "port":         "9000",
+    "user":         "chadmin",
+    "pass":         "xxx",
+    "db":           "default",
+    "cluster_name": "shard2-repl2"
+  },
+  "boss_mysql": {
+    "host": "rm-2ze06v5ed2gb1ol2l.mysql.rds.aliyuncs.com",
+    "port": "3306",
+    "user": "xxx",
+    "pass": "xxx",
+    "db":   "svc_boss_stats"
+  },
+  "org_mysql": {
+    "host": "rm-2zezmon0g7635nkv4.mysql.rds.aliyuncs.com",
+    "port": "3306",
+    "user": "xxx",
+    "pass": "xxx",
+    "db": "organization"
+  },
+  "tree_mysql": {
+    "host": "rm-2zef2h27mdnms0009.mysql.rds.aliyuncs.com",
+    "port": "3306",
+    "user": "xxx",
+    "pass": "xxx",
+    "db":   "svc_tree"
+  },
+  "file_mysql": {
+    "host": "rm-2ze78jx65s1jo7d01.mysql.rds.aliyuncs.com",
+    "port": "3306",
+    "user": "xxx",
+    "pass": "xxx",
+    "db":   "svc_file"
+  },
+  "user_mysql": {
+    "host": "rr-2zed3z7rln5dpmi7i987.mysql.rds.aliyuncs.com:3306",
+    "port": "3306",
+    "user": "xxx",
+    "pass": "xxx",
+    "db":   "shimo_pro"
+  },
+  "kafka": {
+    "broker_list": "kafka-service:9092",
+    "topic_list": "service-events",
+    "group_name": "xxxxx",
+    "format": "AvroConfluent",
+    "avro_url": "http://schema-pro.shimo.run"
+  }
+}

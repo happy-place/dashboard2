@@ -1,0 +1,52 @@
+Clickhouse:
+  Truncate: "ALTER TABLE shard.dws_file_7d_product_statistic_by_global_daily ON CLUSTER '{CLUSTER_NAME}' DELETE WHERE ldate = '{DATE}'"
+  Upsert: "INSERT INTO all.dws_file_7d_product_statistic_by_global_daily (
+               ldate,team_id,
+               create_objs,create_docxs,create_docxs_ratio,
+               create_sheets,create_sheets_ratio,
+               create_tables,create_tables_ratio,
+               create_ppts,create_ppts_ratio,
+               create_docs,create_docs_ratio,
+               create_clouds,create_clouds_ratio,
+               create_others,create_others_ratio)
+           SELECT
+               theDate,
+               team_id,
+               create_objs,
+               create_docxs,
+               if(create_docxs=0,0,if(create_objs=0,null,create_docxs/create_objs)) as create_docxs_ratio,
+               create_sheets,
+               if(create_sheets=0,0,if(create_objs=0,null,create_sheets/create_objs)) as create_sheets_ratio,
+               create_tables,
+               if(create_tables=0,0,if(create_objs=0,null,create_tables/create_objs)) as create_tables_ratio,
+               create_ppts,
+               if(create_ppts=0,0,if(create_objs=0,null,create_ppts/create_objs)) as create_ppts_ratio,
+               create_docs,
+               if(create_docs=0,0,if(create_objs=0,null,create_docs/create_objs)) as create_docs_ratio,
+               create_clouds,
+               if(create_clouds=0,0,if(create_objs=0,null,create_clouds/create_objs)) as create_clouds_ratio,
+               create_others,
+               if(create_others=0,0,if(create_objs=0,null,create_others/create_objs)) as create_others_ratio
+           FROM (
+                SELECT
+                    '{DATE}' as theDate,
+                    team_id,
+                    count(if(file_type in (2,3),guid,null)) as create_objs,
+                    count(if( (file_type=2 and sub_type in (0,-2)), guid,null )) as create_docxs,
+                    count(if( (file_type=2 and sub_type in (-1,-3,-4)), guid,null )) as create_sheets,
+                    count(if( (file_type=2 and sub_type in (-8)), guid,null )) as create_tables,
+                    count(if( (file_type=2 and sub_type in (-5,-10)), guid,null )) as create_ppts,
+                    count(if( (file_type=2 and sub_type in (-6)), guid,null )) as create_docs,
+                    count(if( (file_type=3), guid,null )) as create_clouds,
+                    count(if( (file_type=2 and sub_type in (-7,-9)), guid,null )) as create_others
+                FROM shimo.events_all_view
+                WHERE ldate >= addDays(toDate('{DATE}'), -6) AND ldate <= '{DATE}'
+                  AND file_type in (2,3)
+                  AND action_name in ('create_obj', 'upload_obj')
+                  AND team_id is not null
+                GROUP BY team_id
+            ) TEMP"
+  Query: "SELECT * FROM all.dws_file_7d_product_statistic_by_global_daily WHERE ldate = '{DATE}'"
+Mysql:
+  Truncate: "DELETE FROM dws_file_7d_product_statistic_by_global_daily WHERE ldate = '{DATE}'"
+  Upsert: "INSERT INTO dws_file_7d_product_statistic_by_global_daily VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"

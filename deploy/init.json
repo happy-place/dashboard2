@@ -1,0 +1,52 @@
+{
+  "clickhouse": {
+    "host": "clickhouse-shimoee",
+    "port":         "9000",
+    "user":         "chadmin",
+    "pass":         "81BZaQZTGdjJ2",
+    "db":           "default",
+    "cluster_name": "shard2-repl1"
+  },
+  "boss_mysql": {
+    "host": "mysql-master",
+    "port": "3306",
+    "user": "sm_mysql",
+    "pass": "mysql_Aa123456.",
+    "db":   "boss"
+  },
+  "org_mysql": {
+    "host": "mysql-master",
+    "port": "3306",
+    "user": "sm_mysql",
+    "pass": "mysql_Aa123456.",
+    "db": "organization"
+  },
+  "tree_mysql": {
+    "host": "mysql-master",
+    "port": "3306",
+    "user": "sm_mysql",
+    "pass": "mysql_Aa123456.",
+    "db":   "svc_tree"
+  },
+  "file_mysql": {
+    "host": "mysql-master",
+    "port": "3306",
+    "user": "sm_mysql",
+    "pass": "mysql_Aa123456.",
+    "db":   "svc_file"
+  },
+  "user_mysql": {
+    "host": "mysql-master",
+    "port": "3306",
+    "user": "sm_mysql",
+    "pass": "mysql_Aa123456.",
+    "db":   "shimo_pro"
+  },
+  "kafka": {
+    "broker_list": "kafka-service:9092",
+    "topic_list": "service_events",
+    "group_name": "clickhouse_event_stream_ee",
+    "format": "AvroConfluent",
+    "avro_url": "http://cp-schema-registry:8081"
+  }
+}

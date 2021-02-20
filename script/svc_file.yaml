@@ -1,0 +1,6 @@
+FileClickhouse:
+  Truncate: "ALTER TABLE shard.files ON CLUSTER '{CLUSTER_NAME}' DELETE WHERE guid is not null"
+  Upsert: "INSERT INTO all.files VALUES (?,?,?,?,?,?,?,?,?,?,?)"
+FileMysql:
+  FileQuery: "SELECT guid,name,type,sub_type,created_at,created_by,'space' AS file_loc FROM svc_file.file WHERE guid IS NOT NULL and deleted_at is null"
+  LegacyQuery: "SELECT guid,name,type,sub_type,created_at,created_by,'desktop' AS file_loc FROM svc_file.file_legacy WHERE guid IS NOT NULL and deleted_at is null"

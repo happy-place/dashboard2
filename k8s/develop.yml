@@ -1,0 +1,20 @@
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: dashboard-cronjob
+spec:
+  schedule: "0 5 * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: dashboard-cronjob
+            image: registry-vpc.cn-beijing.aliyuncs.com/shimopro/dashboard:develop
+            imagePullPolicy: always
+            args:
+            - /usr/local/bin/job
+            - -env dev
+            - -debug true
+            - -sql /usr/local/bin/script
+          restartPolicy: OnFailure

@@ -1,0 +1,23 @@
+Clickhouse:
+  Truncate: "ALTER TABLE shard.dws_collaboration_7d_statistic_by_global_daily ON CLUSTER '{CLUSTER_NAME}' DELETE WHERE ldate = '{DATE}'"
+  Upsert: "INSERT INTO all.dws_collaboration_7d_statistic_by_global_daily (ldate,team_id,add_collaborations,use_ats,public_shares,comments,file_views,create_files)
+           SELECT
+               '{DATE}' as theDate,
+               team_id,
+               count(if(action_name='add_collaborator', 1,null)) as add_collaborations,
+               count(if(action_name='at', 1,null)) as use_ats,
+               count(if(action_name='public_share' and status = '1', 1,null)) as public_shares,
+               count(if(action_name='comment', 1,null)) as comments,
+               count(if(action_name='view_file', 1,null)) as file_views,
+               count(if(action_name = 'create_obj' AND file_type != 1, 1,null)) as create_files
+           from
+           (
+               select action_name,visitParamExtractRaw(extend_info,'status') as status,file_type,team_id
+               FROM shimo.events_all_view
+               WHERE ldate = '{DATE}' AND team_id is not null
+           ) t1
+           GROUP BY team_id"
+  Query: "SELECT * FROM all.dws_collaboration_7d_statistic_by_global_daily WHERE ldate = '{DATE}'"
+Mysql:
+  Truncate: "DELETE FROM dws_collaboration_7d_statistic_by_global_daily WHERE ldate = '{DATE}'"
+  Upsert: "INSERT INTO dws_collaboration_7d_statistic_by_global_daily VALUES(?,?,?,?,?,?,?,?)"
